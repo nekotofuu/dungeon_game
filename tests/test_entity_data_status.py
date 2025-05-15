@@ -1,50 +1,64 @@
 # type: ignore
 
 import pytest
-from classes.data.status import Status, IntStatusModifier, FloatStatusModifier
+from classes.data.status import Status, StatusModifier
 
 def test_int_status_mod_init():
     # All case
-    s = IntStatusModifier(1, 2, 3, 4)
+    s = StatusModifier(1, 2, 3, 4)
     assert s.health == 1
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 4
 
     # Default case
-    s = IntStatusModifier()
+    s = StatusModifier()
     assert s.health == 0
     assert s.mana == 0
     assert s.max_health == 0
     assert s.max_mana == 0
 
+
+    # Type checking
+    s = StatusModifier(1, 2, 3, 4, _frac=False)
+    assert not s.fractional
+    assert s.integer
+
+    s = StatusModifier(1.2, 2.4, 3.6, 4.8, _frac=False)
+    assert not s.fractional
+    assert s.integer
+
+    s = StatusModifier(1, 2, 3, 4)
+    assert not s.fractional
+    assert s.integer
+
     # Partial case
-    s = IntStatusModifier(_health=1)
+    s = StatusModifier(_health=1)
     assert s.health == 1
     assert s.mana == 0
     assert s.max_health == 0
     assert s.max_mana == 0
 
-    s = IntStatusModifier(_mana=2)
+    s = StatusModifier(_mana=2)
     assert s.health == 0
     assert s.mana == 2
     assert s.max_health == 0
     assert s.max_mana == 0
 
-    s = IntStatusModifier(_max_health=3)
+    s = StatusModifier(_max_health=3)
     assert s.health == 0
     assert s.mana == 0
     assert s.max_health == 3
     assert s.max_mana == 0
 
-    s = IntStatusModifier(_max_mana=4)
+    s = StatusModifier(_max_mana=4)
     assert s.health == 0
     assert s.mana == 0
     assert s.max_health == 0
     assert s.max_mana == 4
 
     # Conversion
-    s = IntStatusModifier(1.2, 2.4, 9.0, 5.2)
+    s = StatusModifier(1.2, 2.4, 9.0, 5.2)
     assert isinstance(s.health, int)
     assert isinstance(s.mana, int)
     assert isinstance(s.max_health, int)
@@ -56,7 +70,7 @@ def test_int_status_mod_init():
     assert s.max_mana == 5
 
     # Negative handling
-    s = IntStatusModifier(-1, -2, -3, -4)
+    s = StatusModifier(-1, -2, -3, -4)
     assert s.health == -1
     assert s.mana == -2
     assert s.max_health == -3
@@ -64,10 +78,10 @@ def test_int_status_mod_init():
 
     # Invalid handling
     with pytest.raises(TypeError):
-        s = IntStatusModifier("health", "mana", "max_health", "max_mana")
+        s = StatusModifier("health", "mana", "max_health", "max_mana")
 
 def test_int_status_mod_setters():
-    s = IntStatusModifier(1, 3, 9, 20)
+    s = StatusModifier(1, 3, 9, 20)
     
     # Normal values
     s.health = 5
@@ -119,74 +133,149 @@ def test_int_status_mod_setters():
 
 
 def test_float_status_mod_init():
-    # Normal case
-    s = FloatStatusModifier(0.1, 0.2)
-    assert s.health == 0.1
-    assert s.mana == 0.2
+   # All case
+    s = StatusModifier(1.2, 2.4, 3.6, 4.8, _frac=True)
+    assert s.health == 1.2
+    assert s.mana == 2.4
+    assert s.max_health == 3.6
+    assert s.max_mana == 4.8
+    assert s.fractional
+    assert not s.integer
 
     # Default case
-    s = FloatStatusModifier()
+    s = StatusModifier(_frac=True)
     assert s.health == 0.0
     assert s.mana == 0.0
+    assert s.max_health == 0.0
+    assert s.max_mana == 0.0
+    assert s.fractional
+    assert not s.integer
+
+    # Type checking
+    s = StatusModifier(1.2, 2.4, 3.6, 4.8, _frac=True)
+    assert s.fractional
+    assert not s.integer
+
+    s = StatusModifier(1, 2, 3, 4, _frac=True)
+    assert s.fractional
+    assert not s.integer
 
     # Partial case
-    s = FloatStatusModifier(_health=0.5)
-    assert s.health == 0.5
+    s = StatusModifier(_health=1.2, _frac=True)
+    assert s.health == 1.2
     assert s.mana == 0.0
+    assert s.max_health == 0.0
+    assert s.max_mana == 0.0
 
-    s = FloatStatusModifier(_mana=0.3)
+    s = StatusModifier(_mana=2.4, _frac=True)
     assert s.health == 0.0
-    assert s.mana == 0.3
+    assert s.mana == 2.4
+    assert s.max_health == 0.0
+    assert s.max_mana == 0.0
 
-    # Negative handling
-    s = FloatStatusModifier(-0.79, -0.21)
-    assert s.health == -0.79
-    assert s.mana == -0.21
+    s = StatusModifier(_max_health=3.6, _frac=True)
+    assert s.health == 0.0
+    assert s.mana == 0.0
+    assert s.max_health == 3.6
+    assert s.max_mana == 0.0
+
+    s = StatusModifier(_max_mana=4.8, _frac=True)
+    assert s.health == 0.0
+    assert s.mana == 0.0
+    assert s.max_health == 0.0
+    assert s.max_mana == 4.8
 
     # Conversion
-    s = FloatStatusModifier(20, 50)
+    s = StatusModifier(1, 2, 3, 4, _frac=True)
     assert isinstance(s.health, float)
     assert isinstance(s.mana, float)
-    
-    assert s.health == 20.0
-    assert s.mana == 50.0
+    assert isinstance(s.max_health, float)
+    assert isinstance(s.max_mana, float)
 
-    # Invalid values
+    assert s.health == 1.0
+    assert s.mana == 2.0
+    assert s.max_health == 3.0
+    assert s.max_mana == 4.0
+
+    assert s.fractional
+    assert not s.integer
+
+    # Negative handling
+    s = StatusModifier(-1.2, -2.4, -3.6, -4.8, _frac=True)
+    assert s.health == -1.2
+    assert s.mana == -2.4
+    assert s.max_health == -3.6
+    assert s.max_mana == -4.8
+    assert s.fractional
+    assert not s.integer
+
+
+    # Invalid handling
     with pytest.raises(TypeError):
-        s = FloatStatusModifier("health", "mana")
-    
+        s = StatusModifier("health", "mana", "max_health", "max_mana", _frac=True)
+
 def test_float_status_mod_setters():
     # Normal values
-    s = FloatStatusModifier(0.1, 0.2)
-    s.health = 0.5
-    s.mana = 0.3
+    s = StatusModifier(1.2, 3.4, 5.6, 7.8, _frac=True)
+    s.health = 9.1
+    s.mana = 2.3
+    s.max_health = 4.5
+    s.max_mana = 6.7
 
-    assert s.health == 0.5
-    assert s.mana == 0.3
-
-    # Negative values
-    s.health = -0.3012
-    s.mana = -0.0001
-
-    assert s.health == -0.3012
-    assert s.mana == -0.0001
+    assert s.health == 9.1
+    assert s.mana == 2.3
+    assert s.max_health == 4.5
+    assert s.max_mana == 6.7
 
     # Int values
-    s.health = 9
-    s.mana = 5
+    s.health = 1
+    s.mana = 2
+    s.max_health = 3
+    s.max_mana = 4
 
     assert isinstance(s.health, float)
     assert isinstance(s.mana, float)
-    assert s.health == 9.0
-    assert s.mana == 5.0
+    assert isinstance(s.max_health, float)
+    assert isinstance(s.max_mana, float)
+
+    assert s.health == 1.0
+    assert s.mana == 2.0
+    assert s.max_health == 3.0
+    assert s.max_mana == 4.0
+
+    # Negative values
+    s.health = -1.2
+    s.mana = -2.4
+    s.max_health = -3.6
+    s.max_mana = -4.8
+
+    assert s.health == -1.2
+    assert s.mana == -2.4
+    assert s.max_health == -3.6
+    assert s.max_mana == -4.8
 
     # Invalid values
     with pytest.raises(TypeError):
-        s.health = []
+        s.health = "health"
     with pytest.raises(TypeError):
-        s.mana = {}
+        s.mana = "mana"
+    with pytest.raises(TypeError):
+        s.max_health = True
+    with pytest.raises(TypeError):
+        s.max_mana = str
 
 def test_status_init():
+    # Default case
+    s = Status()
+    assert s.health == 0
+    assert s.mana == 0
+    assert s.max_health == 0
+    assert s.max_mana == 0
+    assert isinstance(s.health, int)
+    assert isinstance(s.mana, int)
+    assert isinstance(s.max_health, int)
+    assert isinstance(s.max_mana, int)
+    
     # Normal case
     s = Status(1, 2, 3, 4)
     assert s.health == 1
@@ -200,6 +289,32 @@ def test_status_init():
     assert s.mana == 1
     assert s.max_health == 2
     assert s.max_mana == 1
+
+    # Partial case
+    s = Status(_health=1)
+    assert s.health == 0
+    assert s.mana == 0
+    assert s.max_health == 0
+    assert s.max_mana == 0
+
+    s = Status(_mana=2)
+    assert s.health == 0
+    assert s.mana == 0
+    assert s.max_health == 0
+    assert s.max_mana == 0
+
+    s = Status(_max_health=3)
+    assert s.health == 0
+    assert s.mana == 0
+    assert s.max_health == 3
+    assert s.max_mana == 0
+
+    s = Status(_max_mana=4)
+    assert s.health == 0
+    assert s.mana == 0
+    assert s.max_health == 0
+    assert s.max_mana == 4
+
 
     # Float value handling
     s = Status(0.1, 5.2, 9.3, 7.4)
@@ -244,6 +359,15 @@ def test_status_setters():
     assert s.max_health == 7
     assert s.max_mana == 8
 
+    # Underflow values
+    s.max_health = 6
+    s.max_mana = 5
+
+    assert s.health == 6
+    assert s.mana == 5
+    assert s.max_health == 6
+    assert s.max_mana == 5
+
     # Type conversion
     s.health = 1.61
     s.mana = 2.71
@@ -284,7 +408,7 @@ def test_status_add():
     base = Status(1, 2, 3, 4)
     
     # Normal 
-    modifier = IntStatusModifier(1, 2, 3, 4)
+    modifier = StatusModifier(1, 2, 3, 4)
     s = base + modifier
     assert s.health == 2
     assert s.mana == 4
@@ -292,7 +416,7 @@ def test_status_add():
     assert s.max_mana == 8
 
     # Overflow
-    modifier = IntStatusModifier(4, 4)
+    modifier = StatusModifier(4, 4)
     s = base + modifier
     assert s.health == 3
     assert s.mana == 4
@@ -300,28 +424,28 @@ def test_status_add():
     assert s.max_mana == 4
 
     # Partial
-    modifier = IntStatusModifier(_health=2)
+    modifier = StatusModifier(_health=2)
     s = base + modifier
     assert s.health == 3
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 4
 
-    modifier = IntStatusModifier(_mana=2)
+    modifier = StatusModifier(_mana=2)
     s = base + modifier
     assert s.health == 1
     assert s.mana == 4
     assert s.max_health == 3
     assert s.max_mana == 4
 
-    modifier = IntStatusModifier(_max_health=2)
+    modifier = StatusModifier(_max_health=2)
     s = base + modifier
     assert s.health == 1
     assert s.mana == 2
     assert s.max_health == 5
     assert s.max_mana == 4
 
-    modifier = IntStatusModifier(_max_mana=2)
+    modifier = StatusModifier(_max_mana=2)
     s = base + modifier
     assert s.health == 1
     assert s.mana == 2
@@ -329,14 +453,14 @@ def test_status_add():
     assert s.max_mana == 6
 
     # Partial-overflow
-    modifier = IntStatusModifier(_health=4)
+    modifier = StatusModifier(_health=4)
     s = base + modifier
     assert s.health == 3
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 4
 
-    modifier = IntStatusModifier(_mana=4)
+    modifier = StatusModifier(_mana=4)
     s = base + modifier
     assert s.health == 1
     assert s.mana == 4
@@ -344,7 +468,7 @@ def test_status_add():
     assert s.max_mana == 4
 
     # Negative addition
-    modifier = IntStatusModifier(-1, -1, -1, -1)
+    modifier = StatusModifier(-1, -1, -1, -1)
     s = base + modifier
     assert s.health == 0
     assert s.mana == 1
@@ -353,16 +477,16 @@ def test_status_add():
 
     # Negative addition-overflow
     with pytest.raises(ValueError):
-        modifier = IntStatusModifier(_health=-10)
+        modifier = StatusModifier(_health=-10)
         s = base + modifier
     with pytest.raises(ValueError):
-        modifier = IntStatusModifier(_mana=-10)
+        modifier = StatusModifier(_mana=-10)
         s = base + modifier
     with pytest.raises(ValueError):
-        modifier = IntStatusModifier(_max_health=-10)
+        modifier = StatusModifier(_max_health=-10)
         s = base + modifier
     with pytest.raises(ValueError):
-        modifier = IntStatusModifier(_max_mana=-10)
+        modifier = StatusModifier(_max_mana=-10)
         s = base + modifier
     
     # Invalid operand
@@ -370,18 +494,22 @@ def test_status_add():
     with pytest.raises(TypeError):
         s = base + mod
 
+    mod = StatusModifier(2.5, 3.5, 4.5, 5.5, _frac=True)
+    with pytest.raises(ValueError):
+        s = base + mod
+
 def test_status_iadd():
     s = Status(1, 2, 3, 4)
     
     # Normal
-    s += IntStatusModifier(1, 2, 3, 4)
+    s += StatusModifier(1, 2, 3, 4)
     assert s.health == 2
     assert s.mana == 4
     assert s.max_health == 6
     assert s.max_mana == 8
 
     # Overflow
-    s += IntStatusModifier(8, 8)
+    s += StatusModifier(8, 8)
     assert s.health == 6
     assert s.mana == 8
     assert s.max_health == 6
@@ -390,32 +518,32 @@ def test_status_iadd():
     s = Status(1, 2, 3, 4)
 
     # Partial
-    s += IntStatusModifier(_health=1)
+    s += StatusModifier(_health=1)
     assert s.health == 2
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 4
 
-    s += IntStatusModifier(_mana=1)
+    s += StatusModifier(_mana=1)
     assert s.health == 2
     assert s.mana == 3
     assert s.max_health == 3
     assert s.max_mana == 4
 
-    s += IntStatusModifier(_max_health=1)
+    s += StatusModifier(_max_health=1)
     assert s.health == 2
     assert s.mana == 3
     assert s.max_health == 4
     assert s.max_mana == 4
 
-    s += IntStatusModifier(_max_mana=1)
+    s += StatusModifier(_max_mana=1)
     assert s.health == 2
     assert s.mana == 3
     assert s.max_health == 4
     assert s.max_mana == 5
 
     # Negative addition
-    s += IntStatusModifier(-1, -1, -1, -1)
+    s += StatusModifier(-1, -1, -1, -1)
     assert s.health == 1
     assert s.mana == 2
     assert s.max_health == 3
@@ -424,27 +552,31 @@ def test_status_iadd():
     # Negative addition-overflow
     with pytest.raises(ValueError):
         s = Status(1, 2, 3, 4)
-        s += IntStatusModifier(_health=-10)
+        s += StatusModifier(_health=-10)
     with pytest.raises(ValueError):
         s = Status(1, 2, 3, 4)
-        s += IntStatusModifier(_mana=-10)
+        s += StatusModifier(_mana=-10)
     with pytest.raises(ValueError):
         s = Status(1, 2, 3, 4)
-        s += IntStatusModifier(_max_health=-10)
+        s += StatusModifier(_max_health=-10)
     with pytest.raises(ValueError):
         s = Status(1, 2, 3, 4)
-        s += IntStatusModifier(_max_mana=-10)
+        s += StatusModifier(_max_mana=-10)
     
     # Invalid operand
     with pytest.raises(TypeError):
         s = Status(1, 2, 3, 4)
         s += ["Invalid",  {"operand": 1}]
+    
+    with pytest.raises(ValueError):
+        s = Status(1, 2, 3, 4)
+        s += StatusModifier(2.5, 3.5, 4.5, 5.5, _frac=True)
 
 def test_status_sub():
     base = Status(10, 10, 10, 10)
 
     # Normal
-    modifier = IntStatusModifier(4, 3, 2, 1)
+    modifier = StatusModifier(4, 3, 2, 1)
     s = base - modifier
     assert s.health == 6
     assert s.mana == 7
@@ -452,7 +584,7 @@ def test_status_sub():
     assert s.max_mana == 9
 
     # Partial
-    modifier = IntStatusModifier(9, 8)
+    modifier = StatusModifier(9, 8)
     s = base - modifier
     assert s.health == 1
     assert s.mana == 2
@@ -460,7 +592,7 @@ def test_status_sub():
     assert s.max_mana == 10
 
     # Overflow
-    modifier = IntStatusModifier(_max_health=5, _max_mana=7)
+    modifier = StatusModifier(_max_health=5, _max_mana=7)
     s = base - modifier
     assert s.health == 5
     assert s.mana == 3
@@ -468,14 +600,14 @@ def test_status_sub():
     assert s.max_mana == 3
 
     # Partial specific
-    modifier = IntStatusModifier(_health=5)
+    modifier = StatusModifier(_health=5)
     s = base - modifier
     assert s.health == 5
     assert s.mana == 10
     assert s.max_health == 10
     assert s.max_mana == 10 
 
-    modifier = IntStatusModifier(_mana=7)
+    modifier = StatusModifier(_mana=7)
     s = base - modifier
     assert s.health == 10
     assert s.mana == 3
@@ -483,7 +615,7 @@ def test_status_sub():
     assert s.max_mana == 10
 
     # Negative Subraction
-    modifier = IntStatusModifier(-1, -2, -3, -4)
+    modifier = StatusModifier(-1, -2, -3, -4)
     s = base - modifier
     assert s.health == 11
     assert s.mana == 12
@@ -491,7 +623,7 @@ def test_status_sub():
     assert s.max_mana == 14
 
     # Negative subtraction-overflow
-    modifier = IntStatusModifier(_health=-10, _mana=-10)
+    modifier = StatusModifier(_health=-10, _mana=-10)
     s = base - modifier
     assert s.health == 10
     assert s.mana == 10
@@ -500,59 +632,62 @@ def test_status_sub():
 
     # Subtraction overflow
     with pytest.raises(ValueError):
-        modifier = IntStatusModifier(100, 100, 100, 100)
+        modifier = StatusModifier(100, 100, 100, 100)
         s = base - modifier
 
     # Invalid operand
     with pytest.raises(TypeError):
         s = base - ["Invalid",  {"operand": 1}]
 
+    with pytest.raises(ValueError):
+        s = base - StatusModifier(2.5, 3.5, 4.5, 5.5, _frac=True)
+
 def test_status_isub():
     s = Status(10, 10, 10, 10)
 
     # Normal
-    s -= IntStatusModifier(4, 3, 2, 1)
-    assert s.health == 6
-    assert s.mana == 7
+    s -= StatusModifier(1, 3, 2, 1)
+    assert s.health == 7
+    assert s.mana == 6
     assert s.max_health == 8
     assert s.max_mana == 9
 
     # Partial
-    s -= IntStatusModifier(1, 2)
+    s -= StatusModifier(2, 1)
     assert s.health == 5
     assert s.mana == 5
     assert s.max_health == 8
     assert s.max_mana == 9
 
     # Overflow
-    s -= IntStatusModifier(_max_health=5, _max_mana=7)
+    s -= StatusModifier(_max_health=5, _max_mana=7)
     assert s.health == 3
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 2
 
     # Partial specific
-    s -= IntStatusModifier(_health=2)
+    s -= StatusModifier(_health=2)
     assert s.health == 1
     assert s.mana == 2
     assert s.max_health == 3
     assert s.max_mana == 2
 
-    s -= IntStatusModifier(_mana=2)
+    s -= StatusModifier(_mana=2)
     assert s.health == 1
     assert s.mana == 0
     assert s.max_health == 3
     assert s.max_mana == 2
 
     # Negative Subtraction
-    s -= IntStatusModifier(-1, -2, -3, -4)
+    s -= StatusModifier(-1, -2, -3, -4)
     assert s.health == 2
     assert s.mana == 2
     assert s.max_health == 6
     assert s.max_mana == 6
 
     # Negative subtraction-overflow
-    s -= IntStatusModifier(_health=-10, _mana=-10)
+    s -= StatusModifier(_health=-10, _mana=-10)
     assert s.health == 6
     assert s.mana == 6
     assert s.max_health == 6
@@ -560,17 +695,66 @@ def test_status_isub():
 
     # Subtraction overflow
     with pytest.raises(ValueError):
-        s -= IntStatusModifier(100, 100, 100, 100)
+        s -= StatusModifier(100, 100, 100, 100)
 
     # Invalid operand
     with pytest.raises(TypeError):
         s -= ["Invalid",  {"operand": 1}]
+
+    with pytest.raises(ValueError):
+        s -= StatusModifier(2.5, 3.5, 4.5, 5.5, _frac=True)
     
-def test_status_imult():
+def test_status_mul():
+    base = Status(10, 10, 100, 100)
+
+    # Normal
+    modifier = StatusModifier(0.5, 0.1, _frac=True)
+    s = base * modifier
+    assert s.health == 60
+    assert s.mana == 20
+    assert s.max_health == 100
+    assert s.max_mana == 100
+
+    modifier = StatusModifier(_max_health=0.2, _max_mana=0.5, _frac=True)
+    s = base * modifier
+    assert s.health == 10
+    assert s.mana == 10
+    assert s.max_health == 120
+    assert s.max_mana == 150
+
+    # Overflow
+    modifier = StatusModifier(2, 5, _frac=True)
+    s = base * modifier
+    assert s.health == 100
+    assert s.mana == 100
+    assert s.max_health == 100
+    assert s.max_mana == 100
+
+    # Negative multiplication
+    modifier = StatusModifier(-0.01, -0.05, _frac=True)
+    s = base * modifier
+    assert s.health == 9
+    assert s.mana == 5
+    assert s.max_health == 100
+    assert s.max_mana == 100
+
+    # Negative multiplication overflow
+    with pytest.raises(ValueError):
+        modifier = StatusModifier(-2.0, -3.0, _frac=True)
+        s = base * modifier
+    
+    # Invalid operand
+    with pytest.raises(TypeError):
+        s = base * "invalid"
+
+    with pytest.raises(ValueError):
+        s = base * StatusModifier(2, 3, 4, 5)
+
+def test_status_imul():
     s = Status(10, 10, 100, 100)
 
     # Normal
-    s *= FloatStatusModifier(0.5, 0.1)
+    s *= StatusModifier(0.5, 0.1, _frac=True)
     assert s.health == 60
     assert s.mana == 20
     assert s.max_health == 100
@@ -579,14 +763,14 @@ def test_status_imult():
     # Partial
     s = Status(10, 10, 100, 100)
 
-    s *= FloatStatusModifier(_health=0.2)
+    s *= StatusModifier(_health=0.2, _frac=True)
     assert s.health == 30
     assert s.mana == 10
     assert s.max_health == 100
     assert s.max_mana == 100
 
     s = Status(10, 10, 100, 100)
-    s *= FloatStatusModifier(_mana=0.75)
+    s *= StatusModifier(_mana=0.75, _frac=True)
     assert s.health == 10
     assert s.mana == 85
     assert s.max_health == 100
@@ -594,7 +778,7 @@ def test_status_imult():
 
     # Overflow
     s = Status(30, 80, 100, 100)
-    s *= FloatStatusModifier(0.8, 0.3)
+    s *= StatusModifier(0.8, 0.3, _frac=True)
     assert s.health == 100
     assert s.mana == 100
     assert s.max_health == 100
@@ -602,7 +786,7 @@ def test_status_imult():
 
     # Negative multiplication
     s = Status(100, 100, 100, 100)
-    s *= FloatStatusModifier(-0.5, -0.2)    
+    s *= StatusModifier(-0.5, -0.2, _frac=True)    
     assert s.health == 50
     assert s.mana == 80
     assert s.max_health == 100
@@ -611,14 +795,13 @@ def test_status_imult():
     # Negative multiplication overflow
     with pytest.raises(ValueError):
         s = Status(100, 100, 100, 100)
-        s *= FloatStatusModifier(-2.0, -3.0)
+        s *= StatusModifier(-2.0, -3.0, _frac=True)
 
     # Invalid operand
     with pytest.raises(TypeError):
         s = Status(10, 10, 100, 100)
         s *= "invalid"
-    with pytest.raises(TypeError):
+
+    with pytest.raises(ValueError):
         s = Status(10, 10, 100, 100)
-        s *= IntStatusModifier(1, 2, 3, 4)
-
-
+        s *= StatusModifier(2, 3, 4, 5)

@@ -4,70 +4,34 @@ from classes.data.datautils import numcheck
 from math import floor
 
 @dataclass
-class FloatStatusModifier:
-    _health: float = 0.0
-    _mana: float = 0.0
+class StatusModifier:
+    _health: int | float = 0
+    _mana: int | float = 0
+    _max_health: int | float = 0
+    _max_mana: int | float = 0
+    _frac: bool = False
 
     def __post_init__(self):
         # Check for type incongruency
         if not (
                 isinstance(self._health, (int, float)) \
-                and isinstance(self._mana, (int, float))
+                and isinstance(self._mana, (int, float)) \
+                and isinstance(self._max_health, (int, float)) \
+                and isinstance(self._max_mana, (int, float))
             ):
-            raise TypeError(f"StatusPercentage init error: Attributes must be of type float")
+            raise TypeError("Attributes must be of type int or float.")
         
         # Type conversion
-        if not (
-                isinstance(self._health, float) \
-                and isinstance(self._mana, float)
-            ):
+        if (self._frac):
             self._health = float(self._health)
             self._mana = float(self._mana)
-
-    @property
-    def health(self):
-        return self._health
-    
-    @property
-    def mana(self):
-        return self._mana
-
-    @health.setter
-    @numcheck(val_chk=False)
-    def health(self, other: int | float):
-        self._health = float(other)
-    
-    @mana.setter
-    @numcheck(val_chk=False)
-    def mana(self, other: int | float):
-        self._mana = float(other)
-
-
-@dataclass
-class IntStatusModifier:
-    _health: int = 0
-    _mana: int = 0
-    _max_health: int = 0
-    _max_mana: int = 0
-
-
-    def __post_init__(self):
-        # Check for type incongruency
-        if not (
-                isinstance(self._health, (int, float)) \
-                and isinstance(self._mana, (int, float))
-            ):
-            raise TypeError(f"IntStatusModifier init error: Attributes must be of type int or float but given {type(self._health).__name__} and {type(self._mana).__name__}")
-        
-        # Type conversion
-        if not (
-                isinstance(self._health, int) \
-                and isinstance(self._mana, int)
-            ):
-            self._health = floor(self._health)
-            self._mana = floor(self._mana)
-            self._max_health = floor(self._max_health)
-            self._max_mana = floor(self._max_mana)
+            self._max_health = float(self._max_health)
+            self._max_mana = float(self._max_mana)
+        else:
+            self._health = int(self._health)
+            self._mana = int(self._mana)
+            self._max_health = int(self._max_health)
+            self._max_mana = int(self._max_mana)
 
     @property
     def health(self):
@@ -84,28 +48,54 @@ class IntStatusModifier:
     @property
     def max_mana(self):
         return self._max_mana
+    
+    @property
+    def fractional(self):
+        return self._frac
+    
+    @property
+    def integer(self):
+        return not self._frac
 
     @health.setter
     @numcheck(val_chk=False)
     def health(self, other: int | float):
-        self._health = int(other)
+        if self.integer:
+            convert_type = int
+        else:
+            convert_type = float
+        
+        self._health = convert_type(other)
     
     @mana.setter
     @numcheck(val_chk=False)
     def mana(self, other: int | float):
-        self._mana = int(other)
+        if self.integer:
+            convert_type = int
+        else:
+            convert_type = float
+
+        self._mana = convert_type(other)
 
     @max_health.setter
     @numcheck(val_chk=False)
     def max_health(self, other: int | float):
-        self._max_health = int(other)
+        if self.integer:
+            convert_type = int
+        else:
+            convert_type = float
+
+        self._max_health = convert_type(other)
 
     @max_mana.setter
     @numcheck(val_chk=False)
     def max_mana(self, other: int | float):
-        self._max_mana = int(other)
-
-
+        if self.integer:
+            convert_type = int
+        else:
+            convert_type = float
+        
+        self._max_mana = convert_type(other)
 
 @dataclass
 class Status:
@@ -155,31 +145,70 @@ class Status:
 
 
     # Status Arithmetic
-    def __add__(self, other: IntStatusModifier) -> Self:
-        if not isinstance(other, IntStatusModifier):
+    def __add__(self, other: StatusModifier) -> Self:
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
             raise TypeError(f"Invalid operand type: expected Status, got {type(other).__name__}")
 
+        # Check for valid values
+        if other.fractional:
+            raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
+
         current_type = type(self)
-        new_health = self.health + other.health
-        new_max_health = self.max_health + other.max_health
-        new_mana = self.mana + other.mana
-        new_max_mana = self.max_mana + other.max_mana
+
+        new_max_health = int(self.max_health + other.max_health)
+        new_max_mana = int(self.max_mana + other.max_mana)
+
+        new_health = int(min(self.health + other.health, new_max_health))
+        new_mana = int(min(self.mana + other.mana, new_max_mana))
+
         return current_type(new_health, new_mana, new_max_health, new_max_mana)
     
-    def __sub__(self, other: IntStatusModifier) -> Self:
-        if not isinstance(other, IntStatusModifier):
-            raise TypeError(f"Invalid operand type: expected Status, got {type(other).__name__}")
+    def __sub__(self, other: StatusModifier) -> Self:
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
+            raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
+        # Check for valid values
+        if other.fractional:
+            raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
+
         current_type = type(self)
-        new_health = self.health - other.health
-        new_max_health = self.max_health - other.max_health
-        new_mana = self.mana - other.mana
-        new_max_mana = self.max_mana - other.max_mana
+
+        new_max_health = int(self.max_health - other.max_health)
+        new_max_mana = int(self.max_mana - other.max_mana)
+
+        new_health = int(min(self.health - other.health, new_max_health))
+        new_mana = int(min(self.mana - other.mana, new_max_mana))
+        
         return current_type(new_health, new_mana, new_max_health, new_max_mana)
         
-    def __iadd__(self, other: IntStatusModifier) -> Self:
-        if not isinstance(other, IntStatusModifier):
-            raise TypeError(f"Invalid operand type: expected Status, got {type(other).__name__}")
+    def __mul__(self, other: StatusModifier) -> Self:
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
+            raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
+        
+        # Check for valid values
+        if other.integer:
+            raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
+        
+        current_type = type(self)
+
+        new_max_health = int(self.max_health * (1 + other.max_health))
+        new_max_mana = int(self.max_mana * (1 + other.max_mana))
+
+        new_health = int(min(self.health + self.max_health * other.health, new_max_health))
+        new_mana = int(min(self.mana + self.max_mana * other.mana, new_max_mana))
+        return current_type(new_health, new_mana, new_max_health, new_max_mana)
+
+    def __iadd__(self, other: StatusModifier) -> Self:
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
+            raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
+        
+        # Check for valid values
+        if other.fractional:
+            raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
         
         self.max_health += other.max_health
         self.max_mana += other.max_mana
@@ -188,9 +217,14 @@ class Status:
         self.mana = min(self.mana + other.mana, self.max_mana)
         return self
         
-    def __isub__(self, other: IntStatusModifier) -> Self:
-        if not isinstance(other, IntStatusModifier):
-            raise TypeError(f"Invalid operand type: expected Status, got {type(other).__name__}")
+    def __isub__(self, other: StatusModifier) -> Self:
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
+            raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
+        
+        # Check for valid values
+        if other.fractional:
+            raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
         
         self.max_health -= other.max_health
         self.max_mana -= other.max_mana
@@ -199,12 +233,21 @@ class Status:
         self.mana = min(self.mana - other.mana, self.max_mana)
         return self
 
-    def __imul__(self, other: FloatStatusModifier) -> Self:
-        if not isinstance(other, FloatStatusModifier):
-            raise TypeError(f"Invalid operand type: expected FloatStatusModifier, got {type(other).__name__}")
+    def __imul__(self, other: StatusModifier) -> Self:
         
-        self.health += int(other.health * self.max_health)
-        self.mana += int(other.mana * self.max_mana)
+        # Check for type incongruency
+        if not isinstance(other, StatusModifier):
+            raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
+        
+        # Check for valid values
+        if other.integer:
+            raise ValueError(f"Invalid value: Status only accepts float StatusModifier")
+        
+        self.max_health *= 1 + other.max_health
+        self.max_mana *= 1 + other.max_mana
+        
+        self.health = min(self.health + self.max_health * other.health, self.max_health)
+        self.mana = min(self.mana + self.max_mana * other.mana, self.max_mana)
         return self
     
     
@@ -234,6 +277,9 @@ class Status:
     def max_health(self, other: int | float):
         self._max_health = int(other)
 
+        if self._health > self._max_health:
+            self._health = self._max_health
+
     @mana.setter
     @numcheck()
     def mana(self, other: int | float):
@@ -243,3 +289,6 @@ class Status:
     @numcheck()
     def max_mana(self, other: int | float):
         self._max_mana = int(other)
+
+        if self._mana > self._max_mana:
+            self._mana = self._max_mana
