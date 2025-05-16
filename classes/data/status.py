@@ -3,7 +3,7 @@ from typing import Optional, Self
 from classes.data.datautils import numcheck
 from math import floor
 
-@dataclass
+
 class StatusModifier:
     _health: int | float = 0
     _mana: int | float = 0
@@ -11,27 +11,44 @@ class StatusModifier:
     _max_mana: int | float = 0
     _frac: bool = False
 
-    def __post_init__(self):
-        # Check for type incongruency
+    def __init__(
+            self, 
+            health: int | float = 0, 
+            mana: int | float = 0, 
+            max_health: int | float = 0, 
+            max_mana: int | float = 0, 
+            frac: bool = False
+            ) -> None:
+        self._frac = frac
+        
         if not (
-                isinstance(self._health, (int, float)) \
-                and isinstance(self._mana, (int, float)) \
-                and isinstance(self._max_health, (int, float)) \
-                and isinstance(self._max_mana, (int, float))
+                isinstance(health, (int, float)) \
+                and isinstance(mana, (int, float)) \
+                and isinstance(max_health, (int, float)) \
+                and isinstance(max_mana, (int, float))
             ):
             raise TypeError("Attributes must be of type int or float.")
         
         # Type conversion
-        if (self._frac):
-            self._health = float(self._health)
-            self._mana = float(self._mana)
-            self._max_health = float(self._max_health)
-            self._max_mana = float(self._max_mana)
+        if (frac):
+            self._health = float(health)
+            self._mana = float(mana)
+            self._max_health = float(max_health)
+            self._max_mana = float(max_mana)
         else:
-            self._health = int(self._health)
-            self._mana = int(self._mana)
-            self._max_health = int(self._max_health)
-            self._max_mana = int(self._max_mana)
+            self._health = int(health)
+            self._mana = int(mana)
+            self._max_health = int(max_health)
+            self._max_mana = int(max_mana)
+
+    def __str__(self) -> str:
+        if self.integer:
+            return f"StatusModifier {self.health:+d}/{self.mana:+d} ({self.max_health:+d}/{self.max_mana:+d})"
+        else:
+            return f"StatusModifier {self.health:+.0%}/{self.mana:+.0%} ({self.max_health:+.0%}/{self.max_mana:+.0%})"
+
+    def __repr__(self) -> str:
+        return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana}, frac={self.fractional})"
 
     @property
     def health(self):
