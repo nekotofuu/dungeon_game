@@ -43,9 +43,9 @@ class StatusModifier:
 
     def __str__(self) -> str:
         if self.integer:
-            return f"StatusModifier {self.health:+d}/{self.mana:+d} ({self.max_health:+d}/{self.max_mana:+d})"
+            return f"{self.health:+d}/{self.mana:+d} ({self.max_health:+d}/{self.max_mana:+d})"
         else:
-            return f"StatusModifier {self.health:+.0%}/{self.mana:+.0%} ({self.max_health:+.0%}/{self.max_mana:+.0%})"
+            return f"{self.health:+.0%}/{self.mana:+.0%} ({self.max_health:+.0%}/{self.max_mana:+.0%})"
 
     def __repr__(self) -> str:
         return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana}, frac={self.fractional})"
@@ -114,16 +114,17 @@ class StatusModifier:
         
         self._max_mana = convert_type(other)
 
-@dataclass
-class Status:
-    _health: int = 0
-    _mana: int = 0
 
-    _max_health: int = 0
-    _max_mana: int = 0 
-    
+class Status:
     # Initialization
-    def __post_init__(self):
+    def __init__(
+            self,
+            health: int = 0,
+            mana: int = 0,
+            max_health: int = 0,
+            max_mana: int = 0,
+            ) -> None:
+        
         # Check for type incongruency
         if not (
                 isinstance(self._health, (int, float)) \
@@ -160,6 +161,11 @@ class Status:
         if self._mana > self._max_mana:
             self._mana = self._max_mana
 
+    def __str__(self) -> str:
+        return f"{self.health:d}/{self.mana:d} ({self.max_health:d}/{self.max_mana:d})"
+
+    def __repr__(self) -> str:
+        return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana})"
 
     # Status Arithmetic
     def __add__(self, other: StatusModifier) -> Self:

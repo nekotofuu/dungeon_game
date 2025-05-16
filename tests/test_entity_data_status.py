@@ -271,8 +271,8 @@ def test_status_modifiers_str_rep():
     assert repr(s_float) == "StatusModifier(health=-0.5, mana=2.0, maxhealth=-3.0, maxmana=4.0, frac=True)"
     assert repr(s_int) == "StatusModifier(health=1, mana=-2, maxhealth=3, maxmana=0, frac=False)"
 
-    assert str(s_float) == "StatusModifier -50%/+200% (-300%/+400%)"
-    assert str(s_int) == "StatusModifier +1/-2 (+3/+0)"
+    assert str(s_float) == "-50%/+200% (-300%/+400%)"
+    assert str(s_int) == "+1/-2 (+3/+0)"
 
 def test_status_init():
     # Default case
@@ -345,6 +345,11 @@ def test_status_init():
     # Invalid type handling
     with pytest.raises(TypeError):
         s = Status("health", "mana", "max_health", "max_mana")
+
+def test_status_str_rep():
+    s = Status(1, 2, 3, 4)
+    assert repr(s) == "Status(health=1, mana=2, max_health=3, max_mana=4)"
+    assert str(s) == "1/2 (3/4)"
 
 def test_status_setters():
     s = Status(1, 2, 3, 4)
