@@ -21,16 +21,16 @@ def test_int_status_mod_init():
 
     # Type checking
     s = StatusModifier(1, 2, 3, 4, frac=False)
-    assert not s.fractional
-    assert s.integer
+    assert not s.isfractional
+    assert s.isinteger
 
     s = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=False)
-    assert not s.fractional
-    assert s.integer
+    assert not s.isfractional
+    assert s.isinteger
 
     s = StatusModifier(1, 2, 3, 4)
-    assert not s.fractional
-    assert s.integer
+    assert not s.isfractional
+    assert s.isinteger
 
     # Partial case
     s = StatusModifier(health=1)
@@ -139,8 +139,8 @@ def test_float_status_mod_init():
     assert s.mana == 2.4
     assert s.max_health == 3.6
     assert s.max_mana == 4.8
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
     # Default case
     s = StatusModifier(frac=True)
@@ -148,17 +148,17 @@ def test_float_status_mod_init():
     assert s.mana == 0.0
     assert s.max_health == 0.0
     assert s.max_mana == 0.0
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
     # Type checking
     s = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
     s = StatusModifier(1, 2, 3, 4, frac=True)
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
     # Partial case
     s = StatusModifier(health=1.2, frac=True)
@@ -197,8 +197,8 @@ def test_float_status_mod_init():
     assert s.max_health == 3.0
     assert s.max_mana == 4.0
 
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
     # Negative handling
     s = StatusModifier(-1.2, -2.4, -3.6, -4.8, frac=True)
@@ -206,8 +206,8 @@ def test_float_status_mod_init():
     assert s.mana == -2.4
     assert s.max_health == -3.6
     assert s.max_mana == -4.8
-    assert s.fractional
-    assert not s.integer
+    assert s.isfractional
+    assert not s.isinteger
 
 
     # Invalid handling
