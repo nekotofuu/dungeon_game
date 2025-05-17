@@ -3,155 +3,184 @@
 import pytest
 from classes.data.attributes import Attribute
 
-def test_attribute_init():
-    # Normal case
-    a = Attribute(1, 2, 3, 4, 5, 5, 6, 7)
-    assert a.strength == 1
-    assert a.defense == 2
-    assert a.intellect == 3
-    assert a.willpower == 4
-    assert a.dexterity == 5
-    assert a.accuracy == 5
-    assert a.speed == 6
-    assert a.luck == 7
+def test_attr_init():
+    # Test default initialization
+    attr = Attribute()
+    assert attr.strength == 0
+    assert attr.defense == 0
+    assert attr.intellect == 0
+    assert attr.willpower == 0
+    assert attr.dexterity == 0
+    assert attr.accuracy == 0
+    assert attr.speed == 0
+    assert attr.luck == 0
 
-    # Default case
-    a = Attribute()
-    assert a.strength == 0
-    assert a.defense == 0
-    assert a.intellect == 0
-    assert a.willpower == 0
-    assert a.dexterity == 0
-    assert a.accuracy == 0
-    assert a.speed == 0
-    assert a.luck == 0
+    # Custom initialization with valid values
+    attr = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    assert attr.strength == 10
+    assert attr.defense == 20
+    assert attr.intellect == 30
+    assert attr.willpower == 40
+    assert attr.dexterity == 50
+    assert attr.accuracy == 60
+    assert attr.speed == 70
+    assert attr.luck == 80
 
-    a = Attribute(_strength=2, _willpower=3, _luck=5)
-    assert a.strength == 2
-    assert a.defense == 0
-    assert a.intellect == 0
-    assert a.willpower == 3
-    assert a.dexterity == 0
-    assert a.accuracy == 0
-    assert a.speed == 0
-    assert a.luck == 5
+    # Test initialization with float values
+    attr = Attribute(strength=10.5, defense=20.5, intellect=30.5, willpower=40.5, dexterity=50.5, accuracy=60.5, speed=70.5, luck=80.5)
+    assert attr.strength == 10
+    assert attr.defense == 20
+    assert attr.intellect == 30
+    assert attr.willpower == 40
+    assert attr.dexterity == 50
+    assert attr.accuracy == 60
+    assert attr.speed == 70
+    assert attr.luck == 80
 
-    a = Attribute(0.1, 1.2, 2.3, 5.4, 10.5, 7.6, 3.7, 9.8)
-    assert a.strength == 0
-    assert a.defense == 1
-    assert a.intellect == 2
-    assert a.willpower == 5
-    assert a.dexterity == 10
-    assert a.accuracy == 7
-    assert a.speed == 3
-    assert a.luck == 9
-
-    # Error case
+    # Invalid initialization with negative values
     with pytest.raises(ValueError):
-        Attribute(10, 2, 3, 9, -1, 0 ,2, 0)
+        Attribute(-1, -2, -3, -4, -5, -6, -7, -8)
+
+    # Invalid initialization with non-integer types
+    with pytest.raises(TypeError):
+        Attribute("a", "b", "c", "d", "e", "f", "g", "h")
     
-def test_attribute_add():
-    # Addition
-    ## All
-    a1 = Attribute(1, 2, 3, 4, 5, 6, 7, 8)
-    a2 = Attribute(2, 4, 6, 8, 10, 12, 14, 16)
-    a3 = a1 + a2
-    assert a3.strength == 3
-    assert a3.defense == 6
-    assert a3.intellect == 9
-    assert a3.willpower == 12
-    assert a3.dexterity == 15
-    assert a3.accuracy == 18
-    assert a3.speed == 21
-    assert a3.luck == 24
+    # Invalid initialization with mixed types
+    with pytest.raises(TypeError):
+        Attribute(1, 2, 3.5, 4, 5, 6, 7, "8")
     
-    ## Partial
-    a1 = Attribute(7, 33, 41, 16, 25, 95, 17, 77)
-    a2 = Attribute(_defense=7, _intellect=33, _accuracy=20)
-    a3 = a1 + a2
-    assert a3.strength == 7
-    assert a3.defense == 40
-    assert a3.intellect == 74
-    assert a3.willpower == 16
-    assert a3.dexterity == 25
-    assert a3.accuracy == 115
-    assert a3.speed == 17
-    assert a3.luck == 77
+def test_attr_str():
+    # Test string representation
+    attr = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    expected_str = "STR: 10\nDEF: 20\nINT: 30\nWIL: 40\nDEX: 50\nACC: 60\nSPD: 70\nLCK: 80"
+    assert str(attr) == expected_str
 
-    # Assignment
-    ## All
-    a1 = Attribute(1, 2, 3, 4, 5, 6, 7, 8)
-    a1 += Attribute(2, 4, 6, 8, 10, 12, 14, 16)
-    assert a1.strength == 3
-    assert a1.defense == 6
-    assert a1.intellect == 9
-    assert a1.willpower == 12
-    assert a1.dexterity == 15
-    assert a1.accuracy == 18
-    assert a1.speed == 21
-    assert a1.luck == 24
+def test_attr_repr():
+    # Test repr representation
+    attr = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    expected_repr = "Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)"
+    assert repr(attr) == expected_repr
+
+def test_attr_add():
+    # Test addition of two attributes
+    attr1 = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    attr2 = Attribute(strength=5, defense=10, intellect=15, willpower=20, dexterity=25, accuracy=30, speed=35, luck=40)
+    result = attr1 + attr2
+
+    assert result.strength == 15
+    assert result.defense == 30
+    assert result.intellect == 45
+    assert result.willpower == 60
+    assert result.dexterity == 75
+    assert result.accuracy == 90
+    assert result.speed == 105
+    assert result.luck == 120
+
+    # Test addition with a non-Attribute object
+    with pytest.raises(TypeError):
+        attr1 + "not an attribute"
+
+    # Test addition with an empty Attribute
+    attr_empty = Attribute()
+    result = attr1 + attr_empty
+    assert result.strength == 10
+    assert result.defense == 20
+    assert result.intellect == 30
+    assert result.willpower == 40
+    assert result.dexterity == 50
+    assert result.accuracy == 60
+    assert result.speed == 70
+    assert result.luck == 80
+
+def test_attr_sub():
+    # Test subtraction of two attributes
+    attr1 = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    attr2 = Attribute(strength=5, defense=10, intellect=15, willpower=20, dexterity=25, accuracy=30, speed=35, luck=40)
+    result = attr1 - attr2
+
+    assert result.strength == 5
+    assert result.defense == 10
+    assert result.intellect == 15
+    assert result.willpower == 20
+    assert result.dexterity == 25
+    assert result.accuracy == 30
+    assert result.speed == 35
+    assert result.luck == 40
+
+    # Test subtraction with a non-Attribute object
+    with pytest.raises(TypeError):
+        attr1 - "not an attribute"
+
+    # Test subtraction with an empty Attribute
+    attr_empty = Attribute()
+    result = attr1 - attr_empty
+    assert result.strength == 10
+    assert result.defense == 20
+    assert result.intellect == 30
+    assert result.willpower == 40
+    assert result.dexterity == 50
+    assert result.accuracy == 60
+    assert result.speed == 70
+    assert result.luck == 80
+
+def test_attr_iadd():
+    # Test in-place addition of two attributes
+    attr1 = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    attr2 = Attribute(strength=5, defense=10, intellect=15, willpower=20, dexterity=25, accuracy=30, speed=35, luck=40)
+    attr1 += attr2
+
+    assert attr1.strength == 15
+    assert attr1.defense == 30
+    assert attr1.intellect == 45
+    assert attr1.willpower == 60
+    assert attr1.dexterity == 75
+    assert attr1.accuracy == 90
+    assert attr1.speed == 105
+    assert attr1.luck == 120
+
+    # Test in-place addition with a non-Attribute object
+    with pytest.raises(TypeError):
+        attr1 += "not an attribute"
     
-    ## Partial
-    a1 = Attribute(7, 33, 41, 16, 25, 95, 17, 77)
-    a1 += Attribute(_defense=7, _intellect=33, _accuracy=20)
-    assert a1.strength == 7
-    assert a1.defense == 40
-    assert a1.intellect == 74
-    assert a1.willpower == 16
-    assert a1.dexterity == 25
-    assert a1.accuracy == 115
-    assert a1.speed == 17
-    assert a1.luck == 77
+    # Test in-place addition with an empty Attribute
+    attr_empty = Attribute()
+    attr1 += attr_empty
+    assert attr1.strength == 15
+    assert attr1.defense == 30
+    assert attr1.intellect == 45
+    assert attr1.willpower == 60
+    assert attr1.dexterity == 75
+    assert attr1.accuracy == 90
+    assert attr1.speed == 105
+    assert attr1.luck == 120
 
-def test_attribute_sub():
-    # Subtraction
-    ## All
-    a1 = Attribute(100, 100, 100, 100, 100, 100, 100, 100)
-    a2 = Attribute(41, 14, 61, 75, 80, 43, 98, 27)
-    a3 = a1 - a2
-    assert a3.strength == 59
-    assert a3.defense == 86
-    assert a3.intellect == 39
-    assert a3.willpower == 25
-    assert a3.dexterity == 20
-    assert a3.accuracy == 57
-    assert a3.speed == 2
-    assert a3.luck == 73
+def test_attr_isub():
+    # Test in-place subtraction of two attributes
+    attr1 = Attribute(strength=10, defense=20, intellect=30, willpower=40, dexterity=50, accuracy=60, speed=70, luck=80)
+    attr2 = Attribute(strength=5, defense=10, intellect=15, willpower=20, dexterity=25, accuracy=30, speed=35, luck=40)
+    attr1 -= attr2
 
-    ## Partial
-    a1 = Attribute(100, 100, 100, 100, 100, 100, 100, 100)
-    a2 = Attribute(_intellect=12, _speed=10, _dexterity=99)
-    a3 = a1 - a2
-    assert a3.strength == 100
-    assert a3.defense == 100
-    assert a3.intellect == 88
-    assert a3.willpower == 100
-    assert a3.dexterity == 1
-    assert a3.accuracy == 100
-    assert a3.speed == 90
-    assert a3.luck == 100
+    assert attr1.strength == 5
+    assert attr1.defense == 10
+    assert attr1.intellect == 15
+    assert attr1.willpower == 20
+    assert attr1.dexterity == 25
+    assert attr1.accuracy == 30
+    assert attr1.speed == 35
+    assert attr1.luck == 40
 
-    # Assignment
-    ## All
-    a = Attribute(100, 100, 100, 100, 100, 100, 100, 100)
-    a -= Attribute(41, 14, 61, 75, 80, 43, 98, 27)
-    assert a.strength == 59
-    assert a.defense == 86
-    assert a.intellect == 39
-    assert a.willpower == 25
-    assert a.dexterity == 20
-    assert a.accuracy == 57
-    assert a.speed == 2
-    assert a.luck == 73
-
-    ## Partial
-    a = Attribute(100, 100, 100, 100, 100, 100, 100, 100)
-    a -= Attribute(_intellect=12, _speed=10, _dexterity=99)
-    assert a.strength == 100
-    assert a.defense == 100
-    assert a.intellect == 88
-    assert a.willpower == 100
-    assert a.dexterity == 1
-    assert a.accuracy == 100
-    assert a.speed == 90
-    assert a.luck == 100
+    # Test in-place subtraction with a non-Attribute object
+    with pytest.raises(TypeError):
+        attr1 -= "not an attribute"
+    
+    # Test in-place subtraction with an empty Attribute
+    attr_empty = Attribute()
+    attr1 -= attr_empty
+    assert attr1.strength == 5
+    assert attr1.defense == 10
+    assert attr1.intellect == 15
+    assert attr1.willpower == 20
+    assert attr1.dexterity == 25
+    assert attr1.accuracy == 30
+    assert attr1.speed == 35
+    assert attr1.luck == 40
