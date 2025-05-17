@@ -35,13 +35,13 @@ class StatusModifier:
             self._max_mana = int(max_mana)
 
     def __str__(self) -> str:
-        if self.integer:
+        if self.isinteger:
             return f"{self.health:+d}/{self.mana:+d} ({self.max_health:+d}/{self.max_mana:+d})"
         else:
             return f"{self.health:+.0%}/{self.mana:+.0%} ({self.max_health:+.0%}/{self.max_mana:+.0%})"
 
     def __repr__(self) -> str:
-        return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana}, frac={self.fractional})"
+        return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana}, frac={self.isfractional})"
 
     def __add__(self, other: Self) -> Self:
         # Check for type incongruency
@@ -49,7 +49,7 @@ class StatusModifier:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
 
         # Check for conflicting modification types
-        if self.integer ^ other.integer:
+        if self.isinteger ^ other.isinteger:
             raise ValueError(f"Invalid value: Operation only accepts same type of StatusModifier")
 
         current_type = type(self)
@@ -59,7 +59,7 @@ class StatusModifier:
         new_max_health = self.max_health + other.max_health
         new_max_mana = self.max_mana + other.max_mana
 
-        result = current_type(new_health, new_mana, new_max_health, new_max_mana, self.fractional)
+        result = current_type(new_health, new_mana, new_max_health, new_max_mana, self.isfractional)
         return round(result)
 
     def __sub__(self, other: Self) -> Self:
@@ -68,7 +68,7 @@ class StatusModifier:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
 
         # Check for conflicting modification types
-        if self.integer ^ other.integer:
+        if self.isinteger ^ other.isinteger:
             raise ValueError(f"Invalid value: Operation only accepts same type of StatusModifier")
 
         current_type = type(self)
@@ -78,7 +78,7 @@ class StatusModifier:
         new_max_health = self.max_health - other.max_health
         new_max_mana = self.max_mana - other.max_mana
 
-        result = current_type(new_health, new_mana, new_max_health, new_max_mana, self.fractional)
+        result = current_type(new_health, new_mana, new_max_health, new_max_mana, self.isfractional)
         return round(result)
     
     def __iadd__(self, other: Self) -> Self:
@@ -87,7 +87,7 @@ class StatusModifier:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
 
         # Check for conflicting modification types
-        if self.integer ^ other.integer:
+        if self.isinteger ^ other.isinteger:
             raise ValueError(f"Invalid value: Operation only accepts same type of StatusModifier")
 
         self.health += other.health
@@ -102,8 +102,8 @@ class StatusModifier:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
 
         # Check for conflicting modification types
-        if self.integer ^ other.integer:
-            raise ValueError(f"Invalid value: Operation only accepts same type of StatusModifier")
+        if self.isinteger ^ other.isinteger:
+            raise ValueError(f"Invalid value: Operation only accepts StatusModifier of the same type")
 
         self.health -= other.health
         self.mana -= other.mana
@@ -112,7 +112,7 @@ class StatusModifier:
         return round(self)
 
     def __round__(self) -> Self:
-        if self.integer:
+        if self.isinteger:
             return self
         else:
             self.health = round(self.health, 4)
@@ -138,11 +138,11 @@ class StatusModifier:
         return self._max_mana
     
     @property
-    def fractional(self):
+    def isfractional(self):
         return self._frac
     
     @property
-    def integer(self):
+    def isinteger(self):
         return not self._frac
 
     @health.setter
@@ -240,7 +240,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected Status, got {type(other).__name__}")
 
         # Check for valid values
-        if other.fractional:
+        if other.isfractional:
             raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
 
         current_type = type(self)
@@ -259,7 +259,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
         # Check for valid values
-        if other.fractional:
+        if other.isfractional:
             raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
 
         current_type = type(self)
@@ -278,7 +278,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
         # Check for valid values
-        if other.integer:
+        if other.isinteger:
             raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
         
         current_type = type(self)
@@ -296,7 +296,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
         # Check for valid values
-        if other.fractional:
+        if other.isfractional:
             raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
         
         self.max_health += other.max_health
@@ -312,7 +312,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
         # Check for valid values
-        if other.fractional:
+        if other.isfractional:
             raise ValueError(f"Invalid value: Status only accepts integer StatusModifier")
         
         self.max_health -= other.max_health
@@ -329,7 +329,7 @@ class Status:
             raise TypeError(f"Invalid operand type: expected StatusModifier, got {type(other).__name__}")
         
         # Check for valid values
-        if other.integer:
+        if other.isinteger:
             raise ValueError(f"Invalid value: Status only accepts float StatusModifier")
         
         self.max_health *= 1 + other.max_health
