@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional, Self
-from classes.data.datautils import numcheck
+from classes.data.utils import numcheck
 from math import floor
 
 
