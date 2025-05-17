@@ -144,46 +144,33 @@ class StatusModifier:
     @property
     def isinteger(self):
         return not self._frac
+    
+    @property
+    def type(self):
+        if self._frac:
+            return float
+        else:
+            return int
 
     @health.setter
     @numcheck(val_chk=False)
     def health(self, other: int | float):
-        if self.integer:
-            convert_type = int
-        else:
-            convert_type = float
-        
-        self._health = convert_type(other)
+        self._health = self.type(other)
     
     @mana.setter
     @numcheck(val_chk=False)
     def mana(self, other: int | float):
-        if self.integer:
-            convert_type = int
-        else:
-            convert_type = float
-
-        self._mana = convert_type(other)
+        self._mana = self.type(other)
 
     @max_health.setter
     @numcheck(val_chk=False)
     def max_health(self, other: int | float):
-        if self.integer:
-            convert_type = int
-        else:
-            convert_type = float
-
-        self._max_health = convert_type(other)
+        self._max_health = self.type(other)
 
     @max_mana.setter
     @numcheck(val_chk=False)
     def max_mana(self, other: int | float):
-        if self.integer:
-            convert_type = int
-        else:
-            convert_type = float
-        
-        self._max_mana = convert_type(other)
+        self._max_mana = self.type(other)
 
 
 
