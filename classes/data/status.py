@@ -270,11 +270,11 @@ class Status:
         
         current_type = type(self)
 
-        new_max_health = int(self.max_health * (1 + other.max_health))
-        new_max_mana = int(self.max_mana * (1 + other.max_mana))
+        new_max_health = int(round(self.max_health * (1 + other.max_health)))
+        new_max_mana = int(round(self.max_mana * (1 + other.max_mana)))
 
-        new_health = int(min(self.health + self.max_health * other.health, new_max_health))
-        new_mana = int(min(self.mana + self.max_mana * other.mana, new_max_mana))
+        new_health = int(min(round(self.health + self.max_health * other.health), new_max_health))
+        new_mana = int(min(round(self.mana + self.max_mana * other.mana), new_max_mana))
         return current_type(new_health, new_mana, new_max_health, new_max_mana)
 
     def __iadd__(self, other: StatusModifier) -> Self:
@@ -319,11 +319,11 @@ class Status:
         if other.isinteger:
             raise ValueError(f"Invalid value: Status only accepts float StatusModifier")
         
-        self.max_health *= 1 + other.max_health
-        self.max_mana *= 1 + other.max_mana
+        self.max_health = int(round(self.max_health * (1 + other.max_health)))
+        self.max_mana = int(round(self.max_mana * (1 + other.max_mana)))
         
-        self.health = min(self.health + self.max_health * other.health, self.max_health)
-        self.mana = min(self.mana + self.max_mana * other.mana, self.max_mana)
+        self.health = int(min(round(self.health + self.max_health * other.health), self.max_health))
+        self.mana = int(min(round(self.mana + self.max_mana * other.mana), self.max_mana))
         return self
     
     
