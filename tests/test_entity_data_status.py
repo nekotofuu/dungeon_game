@@ -268,11 +268,517 @@ def test_status_modifiers_str_rep():
     s_float = StatusModifier(-0.5, 2, -3, 4, frac=True)
     s_int = StatusModifier(1, -2, 3, 0)
 
-    assert repr(s_float) == "StatusModifier(health=-0.5, mana=2.0, maxhealth=-3.0, maxmana=4.0, frac=True)"
-    assert repr(s_int) == "StatusModifier(health=1, mana=-2, maxhealth=3, maxmana=0, frac=False)"
+    assert repr(s_float) == "StatusModifier(health=-0.5, mana=2.0, max_health=-3.0, max_mana=4.0, frac=True)"
+    assert repr(s_int) == "StatusModifier(health=1, mana=-2, max_health=3, max_mana=0, frac=False)"
 
     assert str(s_float) == "-50%/+200% (-300%/+400%)"
     assert str(s_int) == "+1/-2 (+3/+0)"
+
+
+def test_status_modifiers_add():
+    # Integer
+    ## Normal
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(5, 6, 7, 8)
+    s = s1 + s2
+    assert s.health == 6
+    assert s.mana == 8
+    assert s.max_health == 10
+    assert s.max_mana == 12
+
+    ## Partial
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(health=1)
+    s = s1 + s2
+    assert s.health == 2
+    assert s.mana == 2
+    assert s.max_health == 3
+    assert s.max_mana == 4
+
+    s2 = StatusModifier(mana=2)
+    s = s1 + s2
+    assert s.health == 1
+    assert s.mana == 4
+    assert s.max_health == 3
+    assert s.max_mana == 4
+
+    s2 = StatusModifier(max_health=2)
+    s = s1 + s2
+    assert s.health == 1
+    assert s.mana == 2
+    assert s.max_health == 5
+    assert s.max_mana == 4
+
+    s2 = StatusModifier(max_mana=2)
+    s = s1 + s2
+    assert s.health == 1
+    assert s.mana == 2
+    assert s.max_health == 3
+    assert s.max_mana == 6
+
+    ## Negative addition
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(-5, 6, 7, -8)
+    s = s1 + s2
+    assert s.health == -4
+    assert s.mana == 8
+    assert s.max_health == 10
+    assert s.max_mana == -4
+
+    # Fractional
+    ## Normal
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(5.6, 7.8, 9.0, 10.1, frac=True)
+    s = s1 + s2
+    assert s.health == 6.8
+    assert s.mana == 10.2
+    assert s.max_health == 12.6
+    assert s.max_mana == 14.9
+
+    ## Partial
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(health=1.2, frac=True)
+    s = s1 + s2
+    assert s.health == 2.4
+    assert s.mana == 2.4
+    assert s.max_health == 3.6
+    assert s.max_mana == 4.8
+
+    s2 = StatusModifier(mana=2.4, frac=True)
+    s = s1 + s2
+    assert s.health == 1.2
+    assert s.mana == 4.8
+    assert s.max_health == 3.6
+    assert s.max_mana == 4.8
+
+    s2 = StatusModifier(max_health=2.4, frac=True)
+    s = s1 + s2
+    assert s.health == 1.2
+    assert s.mana == 2.4
+    assert s.max_health == 6.0
+    assert s.max_mana == 4.8
+
+    s2 = StatusModifier(max_mana=2.4, frac=True)
+    s = s1 + s2
+    assert s.health == 1.2
+    assert s.mana == 2.4
+    assert s.max_health == 3.6
+    assert s.max_mana == 7.2
+
+    ## Negative addition
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(-5.6, 7.8, 9.0, -10.1, frac=True)
+    s = s1 + s2
+    assert s.health == -4.4
+    assert s.mana == 10.2
+    assert s.max_health == 12.6
+    assert s.max_mana == -5.3
+
+    # Invalid operand
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s = s1 + s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s = s1 + s2
+    
+    # Invalid type
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    with pytest.raises(ValueError):
+        s = s1 + s2
+
+    # Invalid type
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(1, 2, 3, 4)
+    with pytest.raises(ValueError):
+        s = s1 + s2
+    
+
+def test_status_modifiers_iadd():
+    # Integer
+    ## Normal
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(5, 6, 7, 8)
+    s1 += s2
+    assert s1.health == 6
+    assert s1.mana == 8
+    assert s1.max_health == 10
+    assert s1.max_mana == 12
+    
+    ## Partial
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(health=1)
+    s1 += s2
+    assert s1.health == 2
+    assert s1.mana == 2
+    assert s1.max_health == 3
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(mana=2)
+    s1 += s2
+    assert s1.health == 1
+    assert s1.mana == 4
+    assert s1.max_health == 3
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_health=2)
+    s1 += s2
+    assert s1.health == 1
+    assert s1.mana == 2
+    assert s1.max_health == 5
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_mana=2)
+    s1 += s2
+    assert s1.health == 1
+    assert s1.mana == 2
+    assert s1.max_health == 3
+    assert s1.max_mana == 6
+    
+    ## Negative addition
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(-5, 6, 7, -8)
+    s1 += s2
+    assert s1.health == -4
+    assert s1.mana == 8
+    assert s1.max_health == 10
+    assert s1.max_mana == -4
+
+    # Fractional
+    ## Normal
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(5.6, 7.8, 9.0, 10.1, frac=True)
+    s1 += s2
+    assert s1.health == 6.8
+    assert s1.mana == 10.2
+    assert s1.max_health == 12.6
+    assert s1.max_mana == 14.9
+
+    ## Partial
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(health=1.2, frac=True)
+    s1 += s2
+    assert s1.health == 2.4
+    assert s1.mana == 2.4
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(mana=2.4, frac=True)
+    s1 += s2
+    assert s1.health == 1.2
+    assert s1.mana == 4.8
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_health=2.4, frac=True)
+    s1 += s2
+    assert s1.health == 1.2
+    assert s1.mana == 2.4
+    assert s1.max_health == 6.0
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_mana=2.4, frac=True)
+    s1 += s2
+    assert s1.health == 1.2
+    assert s1.mana == 2.4
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 7.2
+
+    ## Negative addition
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(-5.6, 7.8, 9.0, -10.1, frac=True)
+    s1 += s2
+    assert s1.health == -4.4
+    assert s1.mana == 10.2
+    assert s1.max_health == 12.6
+    assert s1.max_mana == -5.3
+
+    # Invalid operand
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s1 += s2
+    
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s1 += s2
+
+    # Invalid type
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    with pytest.raises(ValueError):
+        s1 += s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(1, 2, 3, 4)
+    with pytest.raises(ValueError):
+        s1 += s2
+
+def test_status_modifiers_sub():
+    # Integer
+    ## Normal
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(5, 6, 7, 8)
+    s = s1 - s2
+    assert s.health == -4
+    assert s.mana == -4
+    assert s.max_health == -4
+    assert s.max_mana == -4
+
+    ## Partial
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(health=1)
+    s = s1 - s2
+    assert s.health == 0
+    assert s.mana == 2
+    assert s.max_health == 3
+    assert s.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(mana=2)
+    s = s1 - s2
+    assert s.health == 1
+    assert s.mana == 0
+    assert s.max_health == 3
+    assert s.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_health=2)
+    s = s1 - s2
+    assert s.health == 1
+    assert s.mana == 2
+    assert s.max_health == 1
+    assert s.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_mana=2)
+    s = s1 - s2
+    assert s.health == 1
+    assert s.mana == 2
+    assert s.max_health == 3
+    assert s.max_mana == 2
+
+    ## Negative subtraction
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(-5, 6, 7, -8)
+    s = s1 - s2
+    assert s.health == 6
+    assert s.mana == -4
+    assert s.max_health == -4
+    assert s.max_mana == 12
+
+    # Fractional
+    ## Normal
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(5.6, 7.8, 9.0, 10.1, frac=True)
+    s = s1 - s2
+    assert s.health == -4.4
+    assert s.mana == -5.4
+    assert s.max_health == -5.4
+    assert s.max_mana == -5.3
+
+    ## Partial
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(health=1.2, frac=True)
+    s = s1 - s2
+    assert s.health == 0.0
+    assert s.mana == 2.4
+    assert s.max_health == 3.6
+    assert s.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(mana=2.4, frac=True)
+    s = s1 - s2
+    assert s.health == 1.2
+    assert s.mana == 0.0
+    assert s.max_health == 3.6
+    assert s.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_health=2.4, frac=True)
+    s = s1 - s2
+    assert s.health == 1.2
+    assert s.mana == 2.4
+    assert s.max_health == 1.2
+    assert s.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_mana=2.4, frac=True)
+    s = s1 - s2
+    assert s.health == 1.2
+    assert s.mana == 2.4
+    assert s.max_health == 3.6
+    assert s.max_mana == 2.4
+
+    ## Negative subtraction
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(-5.6, 7.8, 9.0, -10.1, frac=True)
+    s = s1 - s2
+    assert s.health == 6.8
+    assert s.mana == -5.4
+    assert s.max_health == -5.4
+    assert s.max_mana == 14.9
+
+    # Invalid operand
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s = s1 - s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s = s1 - s2
+
+    # Invalid type
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    with pytest.raises(ValueError):
+        s = s1 - s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(1, 2, 3, 4)
+    with pytest.raises(ValueError):
+        s = s1 - s2
+
+
+def test_status_modifiers_isub():
+    # Integer
+    ## Normal
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(5, 6, 7, 8)
+    s1 -= s2
+    assert s1.health == -4
+    assert s1.mana == -4
+    assert s1.max_health == -4
+    assert s1.max_mana == -4
+
+    ## Partial
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(health=1)
+    s1 -= s2
+    assert s1.health == 0
+    assert s1.mana == 2
+    assert s1.max_health == 3
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(mana=2)
+    s1 -= s2
+    assert s1.health == 1
+    assert s1.mana == 0
+    assert s1.max_health == 3
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_health=2)
+    s1 -= s2
+    assert s1.health == 1
+    assert s1.mana == 2
+    assert s1.max_health == 1
+    assert s1.max_mana == 4
+
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(max_mana=2)
+    s1 -= s2
+    assert s1.health == 1
+    assert s1.mana == 2
+    assert s1.max_health == 3
+    assert s1.max_mana == 2
+
+    ## Negative subtraction
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(-5, 6, 7, -8)
+    s1 -= s2
+    assert s1.health == 6
+    assert s1.mana == -4
+    assert s1.max_health == -4
+    assert s1.max_mana == 12
+
+    # Fractional
+    ## Normal
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(5.6, 7.8, 9.0, 10.1, frac=True)
+    s1 -= s2
+    assert s1.health == -4.4
+    assert s1.mana == -5.4
+    assert s1.max_health == -5.4
+    assert s1.max_mana == -5.3
+
+    ## Partial
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(health=1.2, frac=True)
+    s1 -= s2
+    assert s1.health == 0.0
+    assert s1.mana == 2.4
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(mana=2.4, frac=True)
+    s1 -= s2
+    assert s1.health == 1.2
+    assert s1.mana == 0.0
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_health=2.4, frac=True)
+    s1 -= s2
+    assert s1.health == 1.2
+    assert s1.mana == 2.4
+    assert s1.max_health == 1.2
+    assert s1.max_mana == 4.8
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(max_mana=2.4, frac=True)
+    s1 -= s2
+    assert s1.health == 1.2
+    assert s1.mana == 2.4
+    assert s1.max_health == 3.6
+    assert s1.max_mana == 2.4
+    
+    ## Negative subtraction
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(-5.6, 7.8, 9.0, -10.1, frac=True)
+    s1 -= s2
+    assert s1.health == 6.8
+    assert s1.mana == -5.4
+    assert s1.max_health == -5.4
+    assert s1.max_mana == 14.9
+
+    # Invalid operand
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s1 -= s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = ["Invalid",  {"operand": 1}]
+    with pytest.raises(TypeError):
+        s1 -= s2
+
+    # Invalid type
+    s1 = StatusModifier(1, 2, 3, 4)
+    s2 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    with pytest.raises(ValueError):
+        s1 -= s2
+
+    s1 = StatusModifier(1.2, 2.4, 3.6, 4.8, frac=True)
+    s2 = StatusModifier(1, 2, 3, 4)
+    with pytest.raises(ValueError):
+        s1 -= s2
 
 def test_status_init():
     # Default case
