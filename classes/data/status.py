@@ -115,6 +115,7 @@ class StatusModifier:
         self._max_mana = convert_type(other)
 
 
+
 class Status:
     # Initialization
     def __init__(
@@ -125,47 +126,41 @@ class Status:
             max_mana: int = 0,
             ) -> None:
         
+        # Check for invalid values
+        if not (
+                health >= 0 \
+                and mana >= 0 \
+                and max_health >= 0 \
+                and max_mana >= 0
+            ):
+            raise ValueError(f"Status init error: Attributes must be non-negative")
+
         # Check for type incongruency
         if not (
-                isinstance(self._health, (int, float)) \
-                and isinstance(self._mana, (int, float)) \
-                and isinstance(self._max_health, (int, float)) \
-                and isinstance(self._max_mana, (int, float))
+                isinstance(health, (int, float)) \
+                and isinstance(mana, (int, float)) \
+                and isinstance(max_health, (int, float)) \
+                and isinstance(max_mana, (int, float))
            ):
             raise TypeError(f"Status init error: Attributes must be of type int or float")
         
-        # Int conversion
-        if isinstance(self._health, float) \
-           or isinstance(self._mana, float) \
-           or isinstance(self._max_health, float) \
-           or isinstance(self._max_mana, float):
-            self._health = floor(self._health)
-            self._mana = floor(self._mana)
-            self._max_health = floor(self._max_health)
-            self._max_mana = floor(self._max_mana)
-
-
-        # Check for invalid values
-        if not (
-                self._health >= 0 \
-                and self._mana >= 0 \
-                and self._max_health >= 0 \
-                and self._max_mana >= 0
-            ):
-            raise ValueError(f"Status init error: Attributes must be non-negative")
+        self._health = floor(health)
+        self._mana = floor(mana)
+        self._max_health = floor(max_health)
+        self._max_mana = floor(max_mana)
         
         # Overflow handling
-        if self._health > self._max_health:
-            self._health = self._max_health
+        if self.health > self.max_health:
+            self.health = self.max_health
 
-        if self._mana > self._max_mana:
-            self._mana = self._max_mana
+        if self.mana > self.max_mana:
+            self.mana = self.max_mana
 
     def __str__(self) -> str:
         return f"{self.health:d}/{self.mana:d} ({self.max_health:d}/{self.max_mana:d})"
 
     def __repr__(self) -> str:
-        return f"StatusModifier(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana})"
+        return f"Status(health={self.health}, mana={self.mana}, max_health={self.max_health}, max_mana={self.max_mana})"
 
     # Status Arithmetic
     def __add__(self, other: StatusModifier) -> Self:
