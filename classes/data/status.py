@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 from typing import Optional, Self
 from classes.data.utils import numcheck
 from math import floor
