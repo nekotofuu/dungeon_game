@@ -1,65 +1,60 @@
-from dataclasses import dataclass
-from typing import Optional, Self
+from typing import Self
 from classes.data.utils import numcheck
 from math import floor
 
-
-@dataclass
 class Attribute:
-    _strength: int = 0
-    _defense: int = 0
-    _intellect: int = 0
-    _willpower: int = 0
-    _dexterity: int = 0
-    _accuracy: int = 0
-    _speed: int = 0
-    _luck: int = 0
-
-
     # Initialization
-    def __post_init__(self):
+    def __init__(
+            self,
+            strength: int = 0,
+            defense: int = 0,
+            intellect: int = 0,
+            willpower: int = 0,
+            dexterity: int = 0,
+            accuracy: int = 0,
+            speed: int = 0,
+            luck: int = 0    
+        ):
         # Check for type incongruency
         if not (
-                isinstance(self._strength, (int, float)) \
-                and isinstance(self._defense, (int, float)) \
-                and isinstance(self._intellect, (int, float)) \
-                and isinstance(self._willpower, (int, float)) \
-                and isinstance(self._dexterity, (int, float)) \
-                and isinstance(self._accuracy, (int, float)) \
-                and isinstance(self._speed, (int, float)) \
-                and isinstance(self._luck, (int, float))
+                isinstance(strength, (int, float)) \
+                and isinstance(defense, (int, float)) \
+                and isinstance(intellect, (int, float)) \
+                and isinstance(willpower, (int, float)) \
+                and isinstance(dexterity, (int, float)) \
+                and isinstance(accuracy, (int, float)) \
+                and isinstance(speed, (int, float)) \
+                and isinstance(luck, (int, float))
             ):
             raise TypeError(f"Attribute init error: Attributes must be of type int")
         
-        # Type conversion
-        if isinstance(self._strength, float) \
-           or isinstance(self._defense, float) \
-           or isinstance(self._intellect, float) \
-           or isinstance(self._willpower, float) \
-           or isinstance(self._dexterity, float) \
-           or isinstance(self._accuracy, float) \
-           or isinstance(self._speed, float) \
-           or isinstance(self._luck, float):
-            self._strength = floor(self._strength)
-            self._defense = floor(self._defense)
-            self._intellect = floor(self._intellect)
-            self._willpower = floor(self._willpower)
-            self._dexterity = floor(self._dexterity)
-            self._accuracy = floor(self._accuracy)
-            self._speed = floor(self._speed)
-            self._luck = floor(self._luck)
-
         # Check for invalid values
-        if not (self._strength >= 0 \
-                and self._defense >= 0 \
-                and self._intellect >= 0 \
-                and self._willpower >= 0 \
-                and self._dexterity >= 0 \
-                and self._accuracy >= 0 \
-                and self._speed >= 0 \
-                and self._luck >= 0
+        if not (
+                strength >= 0 \
+                and defense >= 0 \
+                and intellect >= 0 \
+                and willpower >= 0 \
+                and dexterity >= 0 \
+                and accuracy >= 0 \
+                and speed >= 0 \
+                and luck >= 0
             ):  
             raise ValueError(f"Attribute init error: Attributes must be non-negative")
+        
+        self._strength = floor(strength)
+        self._defense = floor(defense)
+        self._intellect = floor(intellect)
+        self._willpower = floor(willpower)
+        self._dexterity = floor(dexterity)
+        self._accuracy = floor(accuracy)
+        self._speed = floor(speed)
+        self._luck = floor(luck)
+    
+    def __str__(self) -> str:
+        return f"STR: {self.strength}\nDEF: {self.defense}\nINT: {self.intellect}\nWIL: {self.willpower}\nDEX: {self.dexterity}\nACC: {self.accuracy}\nSPD: {self.speed}\nLCK: {self.luck}"
+
+    def __repr__(self) -> str:
+        return f"Attribute(strength={self.strength}, defense={self.defense}, intellect={self.intellect}, willpower={self.willpower}, dexterity={self.dexterity}, accuracy={self.accuracy}, speed={self.speed}, luck={self.luck})"
     
     def __add__(self, other: Self) -> Self:
         if not isinstance(other, Attribute):
