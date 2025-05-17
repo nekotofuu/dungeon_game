@@ -1,15 +1,9 @@
-from typing import Optional, Self
+from typing import Self
 from classes.data.utils import numcheck
 from math import floor
 
 
 class StatusModifier:
-    _health: int | float = 0
-    _mana: int | float = 0
-    _max_health: int | float = 0
-    _max_mana: int | float = 0
-    _frac: bool = False
-
     def __init__(
             self, 
             health: int | float = 0, 
