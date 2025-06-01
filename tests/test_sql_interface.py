@@ -1,8 +1,7 @@
 import pytest
-import sqlite3
 from classes.utils.randgen import randstr, randbool
 from sql.entry import DataEntry, SchemaError
-from sql.constant import *
+from sql.lookup import *
 
 TEST_DB_PATH = "tests/test_object_init.db"
 entry_obj = DataEntry(TEST_DB_PATH)
@@ -132,3 +131,9 @@ def test_sql_insert_errors():
     with pytest.raises(ValueError):
         entry_obj.add('invalid_table', invalid_item_data)
 
+def test_get_table_list():
+    table_list = entry_obj.query_table_list()
+    for table in table_list:
+        if table[0] in ('item', 'equip', 'usable'): continue
+        raise AssertionError("invalid table listing")
+    
